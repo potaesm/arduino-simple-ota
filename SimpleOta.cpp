@@ -33,7 +33,7 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
             file = SPIFFS.open(fileName, "w");
             int len = Http.getSize();
             Serial.printf("Payload size: %d bytes\n", len);
-            uint8_t buff[2048] = {0};
+            uint8_t buff[1024] = {0};
             WiFiClient *stream = Http.getStreamPtr();
             while (Http.connected() && (len > 0 || len == -1))
             {
@@ -47,7 +47,7 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
                     if (len > 0)
                         len -= c;
                 }
-                delayMicroseconds(2);
+                delayMicroseconds(1);
             }
             isDownloaded = true;
             Serial.print("HTTP connection closed or file end\n");
@@ -87,7 +87,6 @@ void updateFromSPIFFS(String fileName)
     file.close();
     Serial.println("Update success!");
     Serial.println("Rebooting...");
-    delay(4000);
     ESP.restart();
 }
 
