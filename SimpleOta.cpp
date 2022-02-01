@@ -41,13 +41,13 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
                 if (size)
                 {
                     int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
-                    Serial.printf("Read: %d bytes\n", c);
-                    Serial.printf("Remaining: %d bytes\n", size);
+                    // Serial.printf("Read: %d bytes\n", c);
+                    // Serial.printf("Remaining: %d bytes\n", size);
                     file.write(buff, c);
                     if (len > 0)
                         len -= c;
                 }
-                delayMicroseconds(1);
+                ESP.wdtFeed();
             }
             isDownloaded = true;
             Serial.print("HTTP connection closed or file end\n");
@@ -92,6 +92,8 @@ void updateFromSPIFFS(String fileName)
 
 void initializeOta(WiFiClient wiFiClient, char *wifiSSID, char *wifiPassword, String fileURL, String fileName)
 {
+    ESP.wdtDisable();
+    ESP.wdtEnable(WDTO_8S);
     Serial.println("Connecting WiFi...");
     connectWifi(wifiSSID, wifiPassword);
     Serial.println("Checking Internet...");
@@ -105,7 +107,7 @@ void initializeOta(WiFiClient wiFiClient, char *wifiSSID, char *wifiPassword, St
     bool isDownloaded = downloadFileToSPIFFS(wiFiClient, fileURL, fileName);
     if (isDownloaded)
     {
-        // disconnectWifi();
+        disconnectWifi();
         updateFromSPIFFS(fileName);
         return;
     }
