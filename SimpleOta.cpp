@@ -15,6 +15,9 @@
 #error "No ESP8266 or ESP32 detected"
 #endif
 
+char *_wifiSSID;
+char *_wifiPassword;
+
 bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName)
 {
     bool isDownloaded = false;
@@ -37,6 +40,10 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
             WiFiClient *stream = Http.getStreamPtr();
             while (Http.connected() && (len > 0 || len == -1))
             {
+                if (!isWiFiConnected())
+                {
+                    connectWifi(_wifiSSID, _wifiPassword);
+                }
                 size_t size = stream->available();
                 if (size)
                 {
@@ -47,6 +54,7 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
                     if (len > 0)
                         len -= c;
                 }
+                // delayMicroseconds(1);
                 ESP.wdtFeed();
             }
             isDownloaded = true;
@@ -92,6 +100,8 @@ void updateFromSPIFFS(String fileName)
 
 void initializeOta(WiFiClient wiFiClient, char *wifiSSID, char *wifiPassword, String fileURL, String fileName)
 {
+    _wifiSSID = wifiSSID;
+    _wifiPassword = wifiPassword;
     ESP.wdtDisable();
     ESP.wdtEnable(WDTO_8S);
     Serial.println("Connecting WiFi...");
