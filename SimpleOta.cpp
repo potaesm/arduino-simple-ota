@@ -15,6 +15,8 @@
 #error "No ESP8266 or ESP32 detected"
 #endif
 
+String proxyServerURL = "http://node-pxy.herokuapp.com/download-file?url=";
+
 char *_wifiSSID;
 char *_wifiPassword;
 
@@ -23,7 +25,7 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
     bool isDownloaded = false;
     File file;
     HTTPClient Http;
-    Http.begin(wiFiClient, fileURL);
+    Http.begin(wiFiClient, proxyServerURL + fileURL);
     Serial.printf("Begin HTTP GET request: %s\n", fileURL.c_str());
     int httpCode = Http.GET();
     if (httpCode > 0)
