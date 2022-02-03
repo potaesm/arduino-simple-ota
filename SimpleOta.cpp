@@ -18,10 +18,10 @@
 // Download file via proxy server
 // char *proxyServerURL = "http://node-pxy.herokuapp.com";
 
-char *_wifiSSID;
-char *_wifiPassword;
+char *__wifiSSID;
+char *__wifiPassword;
 
-bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName)
+bool __downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName)
 {
     bool isDownloaded = false;
     File file;
@@ -44,7 +44,7 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
             while (Http.connected() && (len > 0 || len == -1))
             {
                 if (!isWiFiConnected())
-                    connectWifi(_wifiSSID, _wifiPassword);
+                    connectWifi(__wifiSSID, __wifiPassword);
                 size_t size = stream->available();
                 if (size)
                 {
@@ -71,7 +71,7 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
     return isDownloaded;
 }
 
-void updateFromSPIFFS(String fileName)
+void __updateFromSPIFFS(String fileName)
 {
     Serial.println("Opening update file...");
     if (!SPIFFS.exists(fileName))
@@ -101,8 +101,8 @@ void updateFromSPIFFS(String fileName)
 
 void initializeOta(WiFiClient wiFiClient, char *wifiSSID, char *wifiPassword, String fileURL, String fileName)
 {
-    _wifiSSID = wifiSSID;
-    _wifiPassword = wifiPassword;
+    __wifiSSID = wifiSSID;
+    __wifiPassword = wifiPassword;
     ESP.wdtDisable();
     ESP.wdtEnable(WDTO_8S);
     Serial.println("Connecting WiFi...");
@@ -117,11 +117,11 @@ void initializeOta(WiFiClient wiFiClient, char *wifiSSID, char *wifiPassword, St
     }
     if (SPIFFS.exists(fileName))
         SPIFFS.remove(fileName);
-    bool isDownloaded = downloadFileToSPIFFS(wiFiClient, fileURL, fileName);
+    bool isDownloaded = __downloadFileToSPIFFS(wiFiClient, fileURL, fileName);
     if (isDownloaded)
     {
         disconnectWifi();
-        updateFromSPIFFS(fileName);
+        __updateFromSPIFFS(fileName);
         return;
     }
     Serial.println("Update file is not downloaded");
