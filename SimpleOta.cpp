@@ -15,7 +15,8 @@
 #error "No ESP8266 or ESP32 detected"
 #endif
 
-String proxyServerURL = "http://node-pxy.herokuapp.com/download-file?url=";
+// Download file via proxy server
+// char *proxyServerURL = "http://node-pxy.herokuapp.com";
 
 char *_wifiSSID;
 char *_wifiPassword;
@@ -25,7 +26,8 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
     bool isDownloaded = false;
     File file;
     HTTPClient Http;
-    Http.begin(wiFiClient, proxyServerURL + fileURL);
+    // fileURL = String(proxyServerURL) + "/download-file?url=" + fileURL;
+    Http.begin(wiFiClient, fileURL);
     Serial.printf("Begin HTTP GET request: %s\n", fileURL.c_str());
     int httpCode = Http.GET();
     if (httpCode > 0)
@@ -33,19 +35,16 @@ bool downloadFileToSPIFFS(WiFiClient wiFiClient, String fileURL, String fileName
         Serial.printf("Status code: %d\n", httpCode);
         if (httpCode == HTTP_CODE_OK)
         {
-            if (SPIFFS.exists(fileName))
-                SPIFFS.remove(fileName);
             file = SPIFFS.open(fileName, "w");
             int len = Http.getSize();
-            Serial.printf("Payload size: %d bytes\n", len);
-            uint8_t buff[1024] = {0};
+            Serial.printf("File size: %d bytes\n", len);
+            Serial.print("Downloading...\n");
+            uint8_t buff[512] = {0};
             WiFiClient *stream = Http.getStreamPtr();
             while (Http.connected() && (len > 0 || len == -1))
             {
                 if (!isWiFiConnected())
-                {
                     connectWifi(_wifiSSID, _wifiPassword);
-                }
                 size_t size = stream->available();
                 if (size)
                 {
@@ -116,6 +115,8 @@ void initializeOta(WiFiClient wiFiClient, char *wifiSSID, char *wifiPassword, St
         Serial.println("Unable to activate SPIFFS");
         return;
     }
+    if (SPIFFS.exists(fileName))
+        SPIFFS.remove(fileName);
     bool isDownloaded = downloadFileToSPIFFS(wiFiClient, fileURL, fileName);
     if (isDownloaded)
     {
